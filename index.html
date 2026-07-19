@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mock Interview</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); width: 100%; max-width: 500px; margin-top: 40px; }
+        h2 { margin-top: 0; color: #111; }
+        label { font-weight: 600; display: block; margin: 15px 0 5px; color: #444; font-size: 14px; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+        textarea { resize: none; }
+        button { width: 100%; padding: 12px; background: #0070f3; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 20px; transition: background 0.2s; }
+        button:hover { background: #0051a8; }
+        button:disabled { background: #a0c0ff; cursor: not-allowed; }
+        .questions-box { margin-top: 25px; display: none; }
+        .question-item { background: #f9f9f9; padding: 12px; border-left: 4px solid #0070f3; margin-bottom: 10px; border-radius: 4px; font-size: 15px; color: #222; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>AI Mock Interview</h2>
+        <form id="interviewForm">
+            <label>Job Role</label>
+            <input type="text" id="role" placeholder="e.g. Frontend Developer" required>
+            
+            <label>Job Description / Core Skills</label>
+            <textarea id="description" rows="4" placeholder="Paste details here..." required></textarea>
+            
+            <button type="submit" id="submitBtn">Generate Questions</button>
+        </form>
+
+        <div class="questions-box" id="resultContainer">
+            <h3>Generated Questions:</h3>
+            <div id="questionsList"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('interviewForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const role = document.getElementById('role').value;
+            const description = document.getElementById('description').value;
+            const btn = document.getElementById('submitBtn');
+            const list = document.getElementById('questionsList');
+            const container = document.getElementById('resultContainer');
+
+            btn.disabled = true;
+            btn.innerText = 'Generating...';
+            list.innerHTML = '';
+            container.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/interview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ role, description })
+                });
+                const data = await res.json();
+                
+                if (data.questions) {
+                    data.questions.forEach(q => {
+                        const div = document.createElement('div');
+                        div.className = 'question-item';
+                        div.innerText = q;
+                        list.appendChild(div);
+                    });
+                    container.style.display = 'block';
+                } else {
+                    alert('Failed to get questions.');
+                }
+            } catch (err) {
+                alert('An error occurred.');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Generate Questions';
+            }
+        });
+    </script>
+</body>
+</html>
